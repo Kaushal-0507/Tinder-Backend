@@ -5,18 +5,18 @@ const app = express();
 const { connectDB } = require("./config/database.js");
 const User = require("./models/user.js");
 
+app.use(express.json());
+
 app.post("/signup", async (req, res) => {
-  const newObj = {
-    firstName: "Kaushal",
-    lastName: "Kishore",
-    age: 23,
-    password: "12345",
-  };
+  console.log(req.body);
+  const user = new User(req.body);
 
-  const user = new User(newObj);
-
-  await user.save();
-  res.send("User data is stored");
+  try {
+    await user.save();
+    res.send("User data is stored");
+  } catch (err) {
+    console.log("This is error:", err);
+  }
 });
 
 connectDB()
