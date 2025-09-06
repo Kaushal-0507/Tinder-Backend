@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { required } = require("nodemon/lib/config");
+const validator = require("validator");
 
 const userModel = new mongoose.Schema(
   {
@@ -22,18 +22,23 @@ const userModel = new mongoose.Schema(
       lowercase: true,
       trim: true,
       validate(value) {
-        if (
-          !value.includes("@") ||
-          !value.includes(".") ||
-          !value.endsWith(".com")
-        ) {
-          throw new Error("Email should include @ and end with .com");
+        if (!validator.isEmail(value)) {
+          throw new Error("Email is invalid: " + value);
         }
       },
     },
     password: {
       type: String,
       required: true,
+      validate(value) {
+        if (!validator.isStrongPassword(value)) {
+          throw new Error(
+            "Weak Password: " +
+              value +
+              "--Password should include minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1"
+          );
+        }
+      },
     },
     age: {
       type: Number,
@@ -55,7 +60,11 @@ const userModel = new mongoose.Schema(
     },
     photoUrl: {
       type: String,
-      default: "",
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error("Photo URL is invalid: " + value);
+        }
+      },
     },
     hobbies: {
       type: [String],

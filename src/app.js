@@ -1,55 +1,58 @@
 const express = require("express");
-const PORT = 7000;
-
-const app = express();
+const bcrypt = require("bcrypt");
 const { connectDB } = require("./config/database.js");
 const User = require("./models/user.js");
 
+const PORT = 7000;
+
+const app = express();
+
 app.use(express.json());
 
+// Post user => signup user
 app.post("/signup", async (req, res) => {
   try {
     const userObj = req.body;
+    const { firstName, lastName, email, password } = userObj;
     const allowedFields = ["firstName", "lastName", "password", "email"];
     const isAllowed = Object.keys(userObj).every((k) =>
       allowedFields.includes(k)
     );
     if (!isAllowed) {
-      throw new Error("SignUp is not accurate!!");
+      throw new Error("SignUp is invalid!!");
     }
-    const user = new User(userObj);
+
+    const hashPassword = await bcrypt.hash(password, 10);
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashPassword,
+    });
     await user.save();
     res.send("User data is stored");
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(400).send("ERROR: " + error.message);
   }
 });
 
-app.post("/signin", async (req, res) => {
+//post login => login user
+app.post("/login", async (req, res) => {
   try {
-    const userObj = req.body;
-    const allowedFields = [
-      "firstName",
-      "lastName",
-      "password",
-      "email",
-      "age",
-      "photoUrl",
-      "gender",
-      "hobbies",
-      "about",
-    ];
-    const isAllowed = Object.keys(userObj).every((k) =>
-      allowedFields.includes(k)
-    );
-    if (!isAllowed) {
-      throw new Error("SignIn is invalid!!");
+    const { email, password } = req.body;
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      throw new Error("Invalid Credentials");
     }
-    const user = new User(userObj);
-    await user.save();
-    res.send("User data is stored");
+
+    const isPassword = await bcrypt.compare(password, user.password);
+    if (isPassword) {
+      res.send("Login Successful!!!");
+    } else {
+      throw new Error("Invalid Credentials");
+    }
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(400).send("Error: " + error.message);
   }
 });
 
@@ -63,7 +66,7 @@ app.get("/user", async (req, res) => {
       res.send(user);
     }
   } catch (error) {
-    res.status(404).send("User not found");
+    res.status(404).send("ERROR: " + error.message);
   }
 });
 
@@ -89,7 +92,7 @@ app.patch("/user/:id", async (req, res) => {
 
     res.send("user updated successfully");
   } catch (error) {
-    res.status(404).send(error.message);
+    res.status(404).send("ERROR: " + error.message);
   }
 });
 
@@ -99,7 +102,7 @@ app.delete("/user", async (req, res) => {
     const user = await User.deleteOne({ email: req.body.email });
     res.send("user deleted successfully");
   } catch (error) {
-    res.status(404).send("User not found");
+    res.status(404).send("ERROR: " + error.message);
   }
 });
 
@@ -113,7 +116,7 @@ app.get("/feed", async (req, res) => {
       res.send(user);
     }
   } catch (error) {
-    res.status(404).send(error.message);
+    res.status(404).send("ERROR: " + error.message);
   }
 });
 
@@ -124,6 +127,6 @@ connectDB()
       console.log("express is successfully running on port 7000...");
     });
   })
-  .catch(() => {
-    console.error("Database is not connected");
+  .catch((error) => {
+    console.error("Database is not connected " + error.message);
   });
