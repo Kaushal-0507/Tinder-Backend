@@ -8,9 +8,44 @@ const User = require("./models/user.js");
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  const user = new User(req.body);
-
   try {
+    const userObj = req.body;
+    const allowedFields = ["firstName", "lastName", "password", "email"];
+    const isAllowed = Object.keys(userObj).every((k) =>
+      allowedFields.includes(k)
+    );
+    if (!isAllowed) {
+      throw new Error("SignUp is not accurate!!");
+    }
+    const user = new User(userObj);
+    await user.save();
+    res.send("User data is stored");
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
+app.post("/signin", async (req, res) => {
+  try {
+    const userObj = req.body;
+    const allowedFields = [
+      "firstName",
+      "lastName",
+      "password",
+      "email",
+      "age",
+      "photoUrl",
+      "gender",
+      "hobbies",
+      "about",
+    ];
+    const isAllowed = Object.keys(userObj).every((k) =>
+      allowedFields.includes(k)
+    );
+    if (!isAllowed) {
+      throw new Error("SignIn is invalid!!");
+    }
+    const user = new User(userObj);
     await user.save();
     res.send("User data is stored");
   } catch (error) {
@@ -33,15 +68,28 @@ app.get("/user", async (req, res) => {
 });
 
 //get User => to get One User
-app.patch("/user", async (req, res) => {
+app.patch("/user/:id", async (req, res) => {
+  const userId = req.params?.id;
   try {
-    const user = await User.findOneAndUpdate({ _id: req.body.id }, req.body, {
+    const userObj = req.body;
+    const allowedFields = ["gender", "hobbies", "photoUrl", "about"];
+    const isAllowed = Object.keys(userObj).every((k) =>
+      allowedFields.includes(k)
+    );
+    if (!isAllowed) {
+      throw new Error("Update is unsuccessful");
+    }
+
+    if (userObj?.hobbies?.length > 10) {
+      throw new Error("Hobbies cannot be more than 10");
+    }
+    const user = await User.findOneAndUpdate({ _id: userId }, userObj, {
       runValidators: true,
     });
 
     res.send("user updated successfully");
   } catch (error) {
-    res.status(404).send("User not found " + error.message);
+    res.status(404).send(error.message);
   }
 });
 
