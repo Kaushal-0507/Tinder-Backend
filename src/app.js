@@ -15,7 +15,60 @@ app.post("/signup", async (req, res) => {
     await user.save();
     res.send("User data is stored");
   } catch (err) {
-    console.log("This is error:", err);
+    res.status(400).send("error:", err);
+  }
+});
+
+//get User => to get One User
+app.get("/user", async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      res.status(404).send("user not found");
+    } else {
+      res.send(user);
+    }
+  } catch (error) {
+    res.status(404).send("User not found");
+  }
+});
+
+//get User => to get One User
+app.patch("/user", async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate({ _id: req.body.id }, req.body);
+
+    if (!user) {
+      res.status(404).send("user not found");
+    } else {
+      res.send("user updated successfully");
+    }
+  } catch (error) {
+    res.status(404).send("User not found");
+  }
+});
+
+//Delete user => deleting a particular user
+app.delete("/user", async (req, res) => {
+  try {
+    const user = await User.deleteOne({ email: req.body.email });
+    res.send("user deleted successfully");
+  } catch (error) {
+    res.status(404).send("User not found");
+  }
+});
+
+// Get feed => to get all the users
+app.get("/feed", async (req, res) => {
+  try {
+    const user = await User.find({});
+    if (!user) {
+      res.status(404).send("user not found");
+    } else {
+      res.send(user);
+    }
+  } catch (error) {
+    res.status(404).send(error);
   }
 });
 
