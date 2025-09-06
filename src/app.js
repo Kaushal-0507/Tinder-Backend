@@ -8,14 +8,13 @@ const User = require("./models/user.js");
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  console.log(req.body);
   const user = new User(req.body);
 
   try {
     await user.save();
     res.send("User data is stored");
-  } catch (err) {
-    res.status(400).send("error:", err);
+  } catch (error) {
+    res.status(400).send(error.message);
   }
 });
 
@@ -36,15 +35,13 @@ app.get("/user", async (req, res) => {
 //get User => to get One User
 app.patch("/user", async (req, res) => {
   try {
-    const user = await User.findOneAndUpdate({ _id: req.body.id }, req.body);
+    const user = await User.findOneAndUpdate({ _id: req.body.id }, req.body, {
+      runValidators: true,
+    });
 
-    if (!user) {
-      res.status(404).send("user not found");
-    } else {
-      res.send("user updated successfully");
-    }
+    res.send("user updated successfully");
   } catch (error) {
-    res.status(404).send("User not found");
+    res.status(404).send("User not found " + error.message);
   }
 });
 
@@ -68,7 +65,7 @@ app.get("/feed", async (req, res) => {
       res.send(user);
     }
   } catch (error) {
-    res.status(404).send(error);
+    res.status(404).send(error.message);
   }
 });
 
