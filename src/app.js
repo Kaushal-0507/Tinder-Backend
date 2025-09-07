@@ -2,12 +2,16 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const { connectDB } = require("./config/database.js");
 const User = require("./models/user.js");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewares/auth.js");
 
 const PORT = 7000;
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 // Post user => signup user
 app.post("/signup", async (req, res) => {
@@ -46,14 +50,32 @@ app.post("/login", async (req, res) => {
     }
 
     const isPassword = await bcrypt.compare(password, user.password);
-    if (isPassword) {
-      res.send("Login Successful!!!");
-    } else {
+    if (!isPassword) {
       throw new Error("Invalid Credentials");
     }
+
+    const token = jwt.sign({ _id: user._id }, "A$CE3D2Y");
+
+    res.cookie("token", token);
+
+    res.send("Login Successful");
   } catch (error) {
     res.status(400).send("Error: " + error.message);
   }
+});
+
+// Get profile => get method to get user profile
+app.get("/profile", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    res.send(user);
+  } catch (error) {
+    res.status(400).send("Error: " + error.message);
+  }
+});
+
+app.post("/sentConnectionRequest", userAuth, (req, res) => {
+  res.send("connection request sent");
 });
 
 //get User => to get One User
