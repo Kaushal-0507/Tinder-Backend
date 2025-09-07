@@ -49,12 +49,12 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid Credentials");
     }
 
-    const isPassword = await bcrypt.compare(password, user.password);
+    const isPassword = await user.validatePassword(password);
     if (!isPassword) {
       throw new Error("Invalid Credentials");
     }
 
-    const token = jwt.sign({ _id: user._id }, "A$CE3D2Y");
+    const token = await user.getJwt();
 
     res.cookie("token", token);
 
@@ -75,7 +75,8 @@ app.get("/profile", userAuth, async (req, res) => {
 });
 
 app.post("/sentConnectionRequest", userAuth, (req, res) => {
-  res.send("connection request sent");
+  const user = req.user;
+  res.send(user.firstName + " sent connection request");
 });
 
 //get User => to get One User
