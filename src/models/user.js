@@ -70,6 +70,11 @@ const userModel = new mongoose.Schema(
     },
     hobbies: {
       type: [String],
+      validate(value) {
+        if (value.length > 10) {
+          throw new Error("Hobbies cannot be more than 10:");
+        }
+      },
     },
   },
 
