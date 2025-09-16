@@ -2,7 +2,7 @@ const express = require("express");
 const profileRouter = express.Router();
 const { userAuth } = require("../middlewares/auth.js");
 const { validateEditProfile } = require("../helper/validate.js");
-const user = require("../models/user.js");
+const User = require("../models/user.js");
 const bcrypt = require("bcrypt");
 
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
@@ -20,15 +20,24 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
       throw new Error("Invalid field request!!!");
     }
 
-    const loggedInUser = req.user;
+    const userId = req.user._id;
 
-    Object.keys(req.body).every((key) => (loggedInUser[key] = req.body[key]));
-    await loggedInUser.save();
+    // Alternative approach using findByIdAndUpdate
+    const updatedUser = await User.findByIdAndUpdate(userId, req.body, {
+      new: true, // Return the updated document
+      runValidators: true, // Run schema validators
+    });
+
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+
     res.json({
-      message: `${loggedInUser.firstName} your profile updated successfully!!!`,
-      data: loggedInUser,
+      message: `${updatedUser.firstName} your profile is updated successfully!!!`,
+      data: updatedUser,
     });
   } catch (error) {
+    console.error("Update error:", error);
     res.status(400).send("Error: " + error.message);
   }
 });

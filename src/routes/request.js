@@ -34,7 +34,7 @@ requestRouter.post(
           },
         ],
       });
-      console.log(existedRequest);
+
       if (existedRequest) {
         throw new Error("Request Already Exists!!!");
       }

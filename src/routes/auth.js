@@ -47,7 +47,7 @@ authRouter.post("/login", async (req, res) => {
 
     res.cookie("token", token);
 
-    res.send("Login Successful");
+    res.send(user);
   } catch (error) {
     res.status(400).send("Error: " + error.message);
   }

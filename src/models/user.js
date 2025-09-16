@@ -10,12 +10,14 @@ const userModel = new mongoose.Schema(
       required: true,
       minLength: 3,
       maxLength: 25,
+      trim: true,
     },
     lastName: {
       type: String,
       required: true,
       minLength: 3,
       maxLength: 25,
+      trim: true,
     },
     email: {
       type: String,
@@ -45,13 +47,13 @@ const userModel = new mongoose.Schema(
     age: {
       type: Number,
       min: 18,
-      max: 60,
+      max: 100, // Increased from 60 to 100 for broader age range
     },
     gender: {
       type: String,
       lowercase: true,
       validate(value) {
-        if (!["male", "female", "others"].includes(value)) {
+        if (!["male", "female", "other"].includes(value)) {
           throw new Error("Gender is invalid");
         }
       },
@@ -59,30 +61,39 @@ const userModel = new mongoose.Schema(
     about: {
       type: String,
       default: "This is my about section!!!",
+      maxLength: 500, // Added max length for bio
     },
-    photoUrl: {
-      type: String,
-      validate(value) {
-        if (!validator.isURL(value)) {
-          throw new Error("Photo URL is invalid: " + value);
-        }
+    // Changed from single photoUrl to array of photo URLs
+    photos: [
+      {
+        type: String,
+        validate(value) {
+          // You might want to adjust this validation if you're sending base64 images
+          if (
+            value &&
+            !validator.isURL(value) &&
+            !value.startsWith("data:image/")
+          ) {
+            throw new Error("Photo URL is invalid: " + value);
+          }
+        },
       },
-    },
+    ],
     hobbies: {
       type: [String],
       validate(value) {
         if (value.length > 10) {
-          throw new Error("Hobbies cannot be more than 10:");
+          throw new Error("Hobbies cannot be more than 10");
         }
       },
     },
   },
-
   {
     timestamps: true,
   }
 );
 
+// Rest of your methods remain the same
 userModel.methods.getJwt = async function () {
   const user = this;
   const token = jwt.sign({ _id: user._id }, "A$CE3D2Y");
@@ -98,4 +109,13 @@ userModel.methods.validatePassword = async function (passwordInputByUser) {
   return isPasswordValid;
 };
 
-module.exports = new mongoose.model("User", userModel);
+// Pre-save middleware to hash password
+userModel.pre("save", async function (next) {
+  const user = this;
+  if (user.isModified("password")) {
+    user.password = await bcrypt.hash(user.password, 10);
+  }
+  next();
+});
+
+module.exports = mongoose.model("User", userModel);
