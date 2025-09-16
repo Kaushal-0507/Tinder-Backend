@@ -24,7 +24,7 @@ authRouter.post("/signup", async (req, res) => {
       password: hashPassword,
     });
     await user.save();
-    res.send("User data is stored");
+    res.send(user);
   } catch (error) {
     res.status(400).send("ERROR: " + error.message);
   }
