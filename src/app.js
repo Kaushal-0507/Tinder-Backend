@@ -6,6 +6,7 @@ const profileRouter = require("./routes/profile.js");
 const requestRouter = require("./routes/request.js");
 const userRouter = require("./routes/user.js");
 const cors = require("cors");
+const router = require("./routes/cloudinary.js");
 const PORT = 7000;
 
 const app = express();
@@ -27,6 +28,7 @@ app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
+app.use("/", router);
 
 connectDB()
   .then(() => {
