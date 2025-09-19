@@ -12,6 +12,7 @@ const USER_SAFE_DATA = [
   "about",
   "hobbies",
   "photos",
+  "gender",
 ];
 
 userRouter.get("/user/requests", userAuth, async (req, res) => {
@@ -53,6 +54,16 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
     });
 
     res.json({ data });
+  } catch (error) {
+    res.status(404).send("ERROR: " + error.message);
+  }
+});
+
+userRouter.get("/user/profile/:userId", userAuth, async (req, res) => {
+  try {
+    const id = req.params.userId;
+    const user = await User.findById(id, USER_SAFE_DATA);
+    res.send(user);
   } catch (error) {
     res.status(404).send("ERROR: " + error.message);
   }
