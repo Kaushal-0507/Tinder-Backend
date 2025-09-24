@@ -60,4 +60,20 @@ profileRouter.patch("/profile/password", userAuth, async (req, res) => {
   }
 });
 
+profileRouter.delete("/profile/user/delete", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+
+    const isPasswordValid = await user.validatePassword(req?.body?.oldPassword);
+    if (!isPasswordValid) {
+      throw new Error("Your old password is incorrect!");
+    }
+
+    await User.findByIdAndDelete(user?._id);
+    res.send("User deleted successfully!");
+  } catch (error) {
+    res.status(400).send("Error: " + error.message);
+  }
+});
+
 module.exports = profileRouter;
