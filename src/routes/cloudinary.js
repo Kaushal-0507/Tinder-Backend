@@ -2,9 +2,6 @@ const { userAuth } = require("../middlewares/auth");
 
 const express = require("express");
 const cloudinary = require("cloudinary");
-const dotenv = require("dotenv");
-
-dotenv.config();
 
 const router = express.Router();
 

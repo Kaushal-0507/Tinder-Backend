@@ -3,6 +3,7 @@ const requestRouter = express.Router();
 const { userAuth } = require("../middlewares/auth.js");
 const ConnectionRequest = require("../models/connectionRequest.js");
 const User = require("../models/user.js");
+const sendEmail = require("../helper/sendEmail.js");
 
 requestRouter.post(
   "/request/send/:status/:toUserId",
@@ -17,26 +18,24 @@ requestRouter.post(
       const isAllowedStatus = allowedStatus.includes(status);
 
       if (!isAllowedStatus) {
-        throw new Error("Status is invalid!!!");
+        return res.status(400).send("ERROR: Status is invalid!!!");
       }
 
-      const toUserExists = await User.findById(toUserId);
-      if (!toUserExists) {
-        throw new Error("User not found");
+      // Fix: Use consistent variable naming
+      const toUser = await User.findById(toUserId);
+      if (!toUser) {
+        return res.status(404).send("ERROR: User not found");
       }
 
-      const existedRequest = await ConnectionRequest.findOne({
+      const existingRequest = await ConnectionRequest.findOne({
         $or: [
           { fromUserId, toUserId },
-          {
-            fromUserId: toUserId,
-            toUserId: fromUserId,
-          },
+          { fromUserId: toUserId, toUserId: fromUserId },
         ],
       });
 
-      if (existedRequest) {
-        throw new Error("Request Already Exists!!!");
+      if (existingRequest) {
+        return res.status(400).send("ERROR: Request Already Exists!!!");
       }
 
       const connectionRequest = new ConnectionRequest({
@@ -46,8 +45,31 @@ requestRouter.post(
       });
 
       await connectionRequest.save();
-      res.send("connection request send!!!");
+
+      // Fix: Proper email content with actual user data
+      const emailSubject = `New Connection Request from ${req.user.firstName}`;
+      const emailBody = `
+        <h3>Hello ${toUser.firstName}!</h3>
+        <p>${req.user.firstName} ${req.user.lastName} has shown interest in connecting with you on Stumble.</p>
+        <p>Status: ${status}</p>
+        <p>Login to your account to review this request.</p>
+      `;
+
+      // Fix: Add error handling for email
+      try {
+        const sendMail = await sendEmail.run(emailSubject, emailBody);
+        console.log("Email sent:", sendMail);
+      } catch (emailError) {
+        console.error("Email sending failed:", emailError);
+        // Don't fail the request if email fails
+      }
+
+      res.status(200).json({
+        message: "Connection request sent successfully!",
+        data: connectionRequest,
+      });
     } catch (error) {
+      console.error("Friend request error:", error);
       res.status(400).send("ERROR: " + error.message);
     }
   }
