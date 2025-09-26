@@ -8,6 +8,8 @@ const requestRouter = require("./routes/request.js");
 const userRouter = require("./routes/user.js");
 const cors = require("cors");
 const router = require("./routes/cloudinary.js");
+const paymentRouter = require("./routes/payment.js");
+require("./helper/cronJobs.js");
 const PORT = 7000;
 
 const app = express();
@@ -30,6 +32,7 @@ app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
 app.use("/", router);
+app.use("/", paymentRouter);
 
 connectDB()
   .then(() => {

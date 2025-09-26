@@ -58,6 +58,16 @@ const userModel = new mongoose.Schema(
         }
       },
     },
+    isPremium: {
+      type: Boolean,
+      default: false,
+    },
+    membershipType: {
+      type: String,
+    },
+    membershipPeriod: {
+      type: String,
+    },
     about: {
       type: String,
       default: "This is my about section!!!",
