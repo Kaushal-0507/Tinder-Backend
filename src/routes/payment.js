@@ -16,7 +16,7 @@ paymentRouter.post("/payment/order", userAuth, async (req, res) => {
 
     const amount = membershipAmount[period]?.[membershipType];
 
-    const { firstName, lastName, email } = req.user;
+    const { firstName, lastName } = req.user;
     const order = await paymentInstance.orders.create({
       amount: amount * 100,
       currency: "INR",
@@ -76,7 +76,7 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
     const user = await User.findOne({ _id: payment.userId });
     (user.isPremium = true),
       (user.membershipType = paymentDetails.notes.membershipType),
-      (user.membershipPeriod = paymentDetails.notes.period);
+      (user.membershipPeriod = paymentDetails.notes.membershipPeriod);
     await user.save();
     console.log("user saved");
 
