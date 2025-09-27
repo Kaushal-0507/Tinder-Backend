@@ -92,7 +92,7 @@ paymentRouter.get("/payment/verify", userAuth, async (req, res) => {
     if (user.isPremium === true) {
       res.send(user);
     } else {
-      res.json({ msg: "Payment Failed" });
+      res.json({ user });
     }
   } catch (error) {
     console.log(error);
