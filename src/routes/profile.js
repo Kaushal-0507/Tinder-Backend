@@ -70,6 +70,10 @@ profileRouter.delete("/profile/user/delete", userAuth, async (req, res) => {
     }
 
     await User.findByIdAndDelete(user?._id);
+    res
+    .cookie("token", null, {
+      expires: new Date(Date.now()),
+    })
     res.send("User deleted successfully!");
   } catch (error) {
     res.status(400).send("Error: " + error.message);
