@@ -13,6 +13,9 @@ const USER_SAFE_DATA = [
   "hobbies",
   "photos",
   "gender",
+  "membershipType",
+  "membershipPeriod",
+  "isPremium",
 ];
 
 userRouter.get("/user/requests", userAuth, async (req, res) => {
