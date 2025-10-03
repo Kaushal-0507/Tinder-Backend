@@ -16,12 +16,11 @@ authRouter.post("/signup", async (req, res) => {
       throw new Error("SignUp is invalid!!");
     }
 
-    const hashPassword = await bcrypt.hash(password, 10);
     const user = new User({
       firstName,
       lastName,
       email,
-      password: hashPassword,
+      password: password,
     });
     const newUser = await user.save();
     const token = await newUser.getJwt();
