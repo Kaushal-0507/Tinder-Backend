@@ -10,6 +10,9 @@ const cors = require("cors");
 const router = require("./routes/cloudinary.js");
 const paymentRouter = require("./routes/payment.js");
 require("./helper/cronJobs.js");
+const http = require("http");
+const initializeSocket = require("./helper/socket.js");
+const chatRouter = require("./routes/chatRoutes.js");
 const PORT = 7000;
 
 const app = express();
@@ -33,11 +36,15 @@ app.use("/", requestRouter);
 app.use("/", userRouter);
 app.use("/", router);
 app.use("/", paymentRouter);
+app.use("/", chatRouter);
+
+const server = http.createServer(app);
+initializeSocket(server);
 
 connectDB()
   .then(() => {
     console.log("Database connection established...");
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log("express is successfully running on port 7000...");
     });
   })
