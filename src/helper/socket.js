@@ -5,7 +5,7 @@ const initializeSocket = (server) => {
   const io = socket(server, {
     origin: [
       "http://localhost:5173", // local dev
-      "https://your-frontend.vercel.app", // production (change later)
+      "https://www.stumble.live/", // production (change later)
     ],
     credentials: true,
   });
