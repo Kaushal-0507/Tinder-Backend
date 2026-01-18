@@ -10,7 +10,7 @@ authRouter.post("/signup", async (req, res) => {
     const { firstName, lastName, email, password } = userObj;
     const allowedFields = ["firstName", "lastName", "password", "email"];
     const isAllowed = Object.keys(userObj).every((k) =>
-      allowedFields.includes(k)
+      allowedFields.includes(k),
     );
     if (!isAllowed) {
       throw new Error("SignUp is invalid!!");
@@ -25,7 +25,12 @@ authRouter.post("/signup", async (req, res) => {
     const newUser = await user.save();
     const token = await newUser.getJwt();
 
-    res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) });
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      expires: new Date(Date.now() + 8 * 3600000),
+    });
     res.send(newUser);
   } catch (error) {
     res.status(400).send("ERROR: " + error.message);
@@ -47,7 +52,12 @@ authRouter.post("/login", async (req, res) => {
 
     const token = await user.getJwt();
 
-    res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) });
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      expires: new Date(Date.now() + 8 * 3600000),
+    });
 
     res.send(user);
   } catch (error) {
