@@ -1,40 +1,41 @@
 require("dotenv").config();
 const express = require("express");
-const { connectDB } = require("./config/database.js");
+const http = require("http");
+const cors = require("cors");
 const cookieParser = require("cookie-parser");
+
+const { connectDB } = require("./config/database.js");
+
 const authRouter = require("./routes/auth.js");
 const profileRouter = require("./routes/profile.js");
 const requestRouter = require("./routes/request.js");
 const userRouter = require("./routes/user.js");
-const cors = require("cors");
-const router = require("./routes/cloudinary.js");
+const cloudinaryRouter = require("./routes/cloudinary.js");
 const paymentRouter = require("./routes/payment.js");
-require("./helper/cronJobs.js");
-const http = require("http");
-const initializeSocket = require("./helper/socket.js");
 const chatRouter = require("./routes/chatRoutes.js");
-const PORT = 7000;
+
+require("./helper/cronJobs.js");
+const initializeSocket = require("./helper/socket.js");
 
 const app = express();
+const PORT = process.env.PORT || 7000;
 
-// Increase payload limit to handle base64 images
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
+app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://your-frontend.vercel.app"],
     credentials: true,
-  })
+  }),
 );
-app.use(express.json());
-app.use(cookieParser());
 
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
-app.use("/", router);
+app.use("/", cloudinaryRouter);
 app.use("/", paymentRouter);
 app.use("/", chatRouter);
 
@@ -43,11 +44,11 @@ initializeSocket(server);
 
 connectDB()
   .then(() => {
-    console.log("Database connection established...");
+    console.log("Database connected");
     server.listen(PORT, () => {
-      console.log("express is successfully running on port 7000...");
+      console.log(`Server running on port ${PORT}`);
     });
   })
-  .catch((error) => {
-    console.error("Database is not connected " + error.message);
+  .catch((err) => {
+    console.error("DB connection failed:", err.message);
   });
