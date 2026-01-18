@@ -5,7 +5,8 @@ const initializeSocket = (server) => {
   const io = socket(server, {
     origin: [
       "http://localhost:5173", // local dev
-      "https://www.stumble.live/", // production (change later)
+      "https://stumble.live",
+      "https://www.stumble.live",
     ],
     credentials: true,
   });
